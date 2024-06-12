@@ -64,7 +64,7 @@ public class ProjectSecurityConfig {
         http.authorizeHttpRequests(request -> {
             request.requestMatchers("h2-consol/**").permitAll();
             request.requestMatchers(HttpMethod.DELETE, "/account","/customer").hasRole("ADMIN"); // By using this line before " request.requestMatchers("/account").hasAnyRole("USER","ADMIN");" we are restricting authority to delete account detail to "ADMIN" only.
-            request.requestMatchers(HttpMethod.GET,"/account/**").hasAuthority("VIEW_ACCOUNT");
+            request.requestMatchers(HttpMethod.GET, "/account/**").hasAuthority("VIEW_ACCOUNT");
             request.requestMatchers("/account", "/account/**", "/customer", "/customer/**").hasAnyRole("USER", "ADMIN"); // Now  post, get and put request can be send by users, no need to explicitly specify method in requestMatchers. But better approach is to use seperate request matchers for each requests.
             request.requestMatchers("/").permitAll();
         });

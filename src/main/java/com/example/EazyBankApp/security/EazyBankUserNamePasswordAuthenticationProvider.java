@@ -44,6 +44,7 @@ public class EazyBankUserNamePasswordAuthenticationProvider implements Authentic
             System.out.println("Password matched in custom auth provider...........................................................................................................");
             List<Authority> authorities = authorityRepository.findByCustomerId(customer.getId());
             authorities.forEach(authority -> grantedAuthorities.add(new SimpleGrantedAuthority(authority.getName())));
+            grantedAuthorities.add(new SimpleGrantedAuthority(customer.getRole()));  // Fix for "CSrfToken not working" commited on 11/06/2024. Previously we were adding authorities from Authority table only missed to add the authority(role) from role column of Customer table.
             System.out.println("UsernamePasswordAuthenticationToken is - "+new UsernamePasswordAuthenticationToken(username, password, grantedAuthorities)+"......................................................................");
             return new UsernamePasswordAuthenticationToken(username, password, grantedAuthorities);
         } else {
