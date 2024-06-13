@@ -1,5 +1,6 @@
 package com.example.EazyBankApp.security;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.example.EazyBankApp.filter.CsrfTokenFilter;
+import com.example.EazyBankApp.filter.JwtTokenGenerationFilter;
+import com.example.EazyBankApp.filter.JwtTokenValidationFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -43,6 +46,7 @@ public class ProjectSecurityConfig {
                 config.setAllowedHeaders(Collections.singletonList("*"));
                 config.setAllowedMethods(Collections.singletonList("*"));
                 config.setAllowedOrigins(Collections.singletonList("*"));
+                config.setExposedHeaders(Arrays.asList("Authorization"));
                 config.setMaxAge(3600L);
 
                 return config;
@@ -51,14 +55,16 @@ public class ProjectSecurityConfig {
         }));
 
         // 2. JsessionID
-        http.securityContext(context -> context.requireExplicitSave(false))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
+        // http.securityContext(context -> context.requireExplicitSave(false))
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         // 3. csrf
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
         // http.csrf(csrf->csrf.disable());
         http.csrf(csrf -> csrf.csrfTokenRequestHandler(requestHandler).ignoringRequestMatchers("/notices", "/contact")
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
-        http.addFilterAfter(new CsrfTokenFilter(), BasicAuthenticationFilter.class);
+        http.addFilterAfter(new CsrfTokenFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtTokenGenerationFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JwtTokenValidationFilter(), BasicAuthenticationFilter.class);
 
         // 4. authorization
         http.authorizeHttpRequests(request -> {
@@ -66,7 +72,7 @@ public class ProjectSecurityConfig {
             request.requestMatchers(HttpMethod.DELETE, "/account","/customer").hasRole("ADMIN"); // By using this line before " request.requestMatchers("/account").hasAnyRole("USER","ADMIN");" we are restricting authority to delete account detail to "ADMIN" only.
             request.requestMatchers(HttpMethod.GET, "/account/**").hasAuthority("VIEW_ACCOUNT");
             request.requestMatchers("/account", "/account/**", "/customer", "/customer/**").hasAnyRole("USER", "ADMIN"); // Now  post, get and put request can be send by users, no need to explicitly specify method in requestMatchers. But better approach is to use seperate request matchers for each requests.
-            request.requestMatchers("/").permitAll();
+            request.anyRequest().permitAll();
         });
 
         // 5.default settings

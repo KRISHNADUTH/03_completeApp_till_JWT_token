@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -56,5 +55,15 @@ public class EazyBankUserNamePasswordAuthenticationProvider implements Authentic
     public boolean supports(Class<?> authentication) {
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
+
+
+
+    @Override
+    public String toString() {
+        return "EazyBankUserNamePasswordAuthenticationProvider [customerRepository=" + customerRepository
+                + ", passwordEncoder=" + passwordEncoder + ", authorityRepository=" + authorityRepository + "]";
+    }
+
+    
 
 }
